@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="INFO">
+    <properties>
+        <property name="LOG_HOME">/root/logs/ChatGPT</property>
+    </properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c:%L[%t] - [%X{trace}]%m%n"/>
+        </Console>
+        <RollingRandomAccessFile
+                name="FILE"
+                fileName="${LOG_HOME}/chat.log"
+                filePattern="${LOG_HOME}/chat.log.%d{yyyy-MM-dd}-%i.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %c:%L[%t] - [%X{trace}]%m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20" compressionLevel="1">
+                <Delete basePath="/root/logs/ChatGPT/" maxDepth="2">
+                    <IfLastModified age="30D"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <root level="INFO">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </Loggers>
+</configuration>
