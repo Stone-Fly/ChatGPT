@@ -64,4 +64,20 @@ public class ChatController {
         chatService.chat(askReq, sseEmitter);
     }
 
+    @PostMapping(value = "/askNoStream")
+    public void askNoStream(@RequestBody AskReq askReq) {
+        log.info(JSONUtil.toJsonStr(askReq));
+        if (StringUtils.isBlank(askReq.getUuid()) || StringUtils.isBlank(askReq.getQuestion())) {
+            return;
+        }
+        SseEmitter sseEmitter = SseEmitterCache.UUID_SSE_EMITTER.get(askReq.getUuid());
+        if (sseEmitter == null) {
+            return;
+        }
+        if (StringUtils.isBlank(askReq.getKey())) {
+            askReq.setKey(ChatConstant.CHAT_GPT_KEY);
+        }
+        chatService.chatNoStream(askReq, sseEmitter);
+    }
+
 }

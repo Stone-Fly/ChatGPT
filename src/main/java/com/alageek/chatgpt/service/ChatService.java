@@ -1,12 +1,15 @@
 package com.alageek.chatgpt.service;
 
+import cn.hutool.core.convert.ConvertException;
+import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
+import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
 import com.alageek.chatgpt.constant.ChatConstant;
-import com.alageek.chatgpt.controller.ChatController;
+import com.alageek.chatgpt.constant.ProxyConstant;
 import com.alageek.chatgpt.dto.AskReq;
-import com.alageek.chatgpt.dto.Model;
 import com.alageek.chatgpt.dto.ChatCompletion;
+import com.alageek.chatgpt.dto.Model;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -99,6 +102,31 @@ public class ChatService {
 
         // 发送请求
         restTemplate.execute(ChatConstant.CHAT_GPT_URL, HttpMethod.POST, requestCallback, responseExtractor);
+    }
+
+    public void chatNoStream(AskReq askReq, SseEmitter sseEmitter) {
+        Model model = new Model(new ArrayList<>());
+        model.getMessages().add(new Model.Message(askReq.getQuestion()));
+
+        String result = HttpRequest.post(ChatConstant.CHAT_GPT_URL)
+                .header(Header.AUTHORIZATION.getValue(), "Bearer " + ChatConstant.CHAT_GPT_KEY)
+                .header(Header.CONTENT_TYPE.getValue(), ContentType.JSON.getValue())
+                .setHttpProxy(ProxyConstant.PROXY_IP, ProxyConstant.PROXY_PORT)
+                .body(JSONUtil.toJsonStr(model))
+                .timeout(100000)
+                .execute().body();
+        try {
+            ChatCompletion chatCompletion = JSONUtil.toBean(result, ChatCompletion.class);
+            String content = chatCompletion.getChoices().get(0).getMessage().getContent();
+            if (content != null) {
+                log.debug(content);
+                sseEmitter.send(SseEmitter.event().data(content));
+            }
+        } catch (ConvertException e) {
+            log.error("json转换失败：{}", result, e);
+        } catch (Exception e) {
+            log.error("SSE 异常", e);
+        }
     }
 
 }

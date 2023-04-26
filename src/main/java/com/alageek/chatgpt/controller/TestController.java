@@ -25,21 +25,4 @@ public class TestController {
         return "Hello, " + content;
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/ask", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public String ask(String content) {
-        Model model = new Model(new ArrayList<>());
-        model.getMessages().add(new Model.Message(content));
-
-        String result = HttpRequest.post(ChatConstant.CHAT_GPT_URL)
-                .header(Header.AUTHORIZATION.getValue(), "Bearer " + ChatConstant.CHAT_GPT_KEY)
-                .header(Header.CONTENT_TYPE.getValue(), ContentType.JSON.getValue())
-                .setHttpProxy(ProxyConstant.PROXY_IP, ProxyConstant.PROXY_PORT)
-                .body(JSONUtil.toJsonStr(model))
-                .timeout(100000)
-                .execute().body();
-        ChatCompletion chatCompletion = JSONUtil.toBean(result, ChatCompletion.class);
-        return chatCompletion.getChoices().get(0).getMessage().getContent();
-    }
-
 }
