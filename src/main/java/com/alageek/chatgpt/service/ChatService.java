@@ -86,6 +86,7 @@ public class ChatService {
                             ChatCompletion chatCompletion = JSONUtil.toBean(sub, ChatCompletion.class);
                             String s = chatCompletion.getChoices().get(0).getDelta().getContent();
                             if (s != null && s.length() > 0) {
+                                log.info(s);
                                 sseEmitter.send(SseEmitter.event().data(s));
                             }
                         } catch (Exception e) {
@@ -119,7 +120,7 @@ public class ChatService {
             ChatCompletion chatCompletion = JSONUtil.toBean(result, ChatCompletion.class);
             String content = chatCompletion.getChoices().get(0).getMessage().getContent();
             if (content != null) {
-                log.debug(content);
+                log.info(content);
                 sseEmitter.send(SseEmitter.event().data(content));
             }
         } catch (ConvertException e) {
