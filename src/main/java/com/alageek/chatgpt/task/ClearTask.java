@@ -30,6 +30,8 @@ public class ClearTask {
         for (String uuid : uuids) {
             SseEmitterCache.UUID_DATE.remove(uuid);
             SseEmitterCache.UUID_SSE_EMITTER.remove(uuid);
+            SseEmitterCache.UUID_CONTENT.remove(uuid);
+            SseEmitterCache.UUID_CONTENT_LENGTH.remove(uuid);
         }
     }
 

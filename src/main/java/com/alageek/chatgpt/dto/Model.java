@@ -1,6 +1,8 @@
 package com.alageek.chatgpt.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -16,13 +18,15 @@ public class Model {
     }
 
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Message {
-        private String role = "user";
-        private String content;
+        public static final String ROLE_SYSTEM = "system";
+        public static final String ROLE_USER = "user";
+        public static final String ROLE_ASSISTANT = "assistant";
 
-        public Message(String content) {
-            this.content = content;
-        }
+        private String role;
+        private String content;
     }
 
 }

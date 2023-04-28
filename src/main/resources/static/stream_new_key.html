@@ -9,6 +9,8 @@
 <body>
 <div id="app">
     <el-input type="hidden" v-model="uuid" :disabled="true"></el-input>
+    <el-input placeholder="请输入你的密钥" v-model="key" show-password></el-input>
+    <div style="margin: 20px 0;"></div>
     <el-input type="textarea" placeholder="请输入你的问题" v-model="question" autosize></el-input>
     <div style="margin: 20px 0;"></div>
     <el-button type="primary" size="small" @click="search">查询</el-button>
@@ -29,6 +31,7 @@
             return {
                 visible: false,
                 uuid: "",
+                key: "",
                 question: "",
                 answer: "",
                 eventSource: null,
@@ -67,9 +70,10 @@
                     // 发起POST请求
                     let data = {
                         uuid: this.uuid,
+                        key: this.key,
                         question: this.question
                     };
-                    axios.post('/chat/askNoStream', data)
+                    axios.post('/chat/ask', data)
                         .then(() => {
                             // this.question = '';
                         })
@@ -81,6 +85,11 @@
             check() {
                 if (!this.uuid) {
                     this.alertMsg = "未获取到访问许可，请刷新页面";
+                    this.open();
+                    return false;
+                }
+                if (!this.key) {
+                    this.alertMsg = "请输入你的密钥";
                     this.open();
                     return false;
                 }

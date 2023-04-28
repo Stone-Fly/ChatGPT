@@ -48,36 +48,40 @@ public class ChatController {
         return emitter;
     }
 
+    @ResponseBody
     @PostMapping("/ask")
-    public void ask(@RequestBody AskReq askReq) {
+    public String ask(@RequestBody AskReq askReq) {
         log.info(JSONUtil.toJsonStr(askReq));
         if (StringUtils.isBlank(askReq.getUuid()) || StringUtils.isBlank(askReq.getQuestion())) {
-            return;
+            return "fail";
         }
         SseEmitter sseEmitter = SseEmitterCache.UUID_SSE_EMITTER.get(askReq.getUuid());
         if (sseEmitter == null) {
-            return;
+            return "fail";
         }
         if (StringUtils.isBlank(askReq.getKey())) {
             askReq.setKey(ChatConstant.CHAT_GPT_KEY);
         }
         chatService.chat(askReq, sseEmitter);
+        return "success";
     }
 
+    @ResponseBody
     @PostMapping(value = "/askNoStream")
-    public void askNoStream(@RequestBody AskReq askReq) {
+    public String askNoStream(@RequestBody AskReq askReq) {
         log.info(JSONUtil.toJsonStr(askReq));
         if (StringUtils.isBlank(askReq.getUuid()) || StringUtils.isBlank(askReq.getQuestion())) {
-            return;
+            return "fail";
         }
         SseEmitter sseEmitter = SseEmitterCache.UUID_SSE_EMITTER.get(askReq.getUuid());
         if (sseEmitter == null) {
-            return;
+            return "fail";
         }
         if (StringUtils.isBlank(askReq.getKey())) {
             askReq.setKey(ChatConstant.CHAT_GPT_KEY);
         }
         chatService.chatNoStream(askReq, sseEmitter);
+        return "success";
     }
 
 }

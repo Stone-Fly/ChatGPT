@@ -5,6 +5,7 @@ import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONUtil;
+import com.alageek.chatgpt.cache.SseEmitterCache;
 import com.alageek.chatgpt.constant.ChatConstant;
 import com.alageek.chatgpt.constant.ProxyConstant;
 import com.alageek.chatgpt.dto.AskReq;
@@ -34,10 +35,10 @@ public class ChatService {
     @Resource
     private RestTemplate restTemplate;
 
-    public void chat(AskReq askReq, SseEmitter sseEmitter){
+    public void chat(AskReq askReq, SseEmitter sseEmitter) {
         Model model = new Model(new ArrayList<>());
         model.setStream(true);
-        model.getMessages().add(new Model.Message(askReq.getQuestion()));
+        model.getMessages().add(new Model.Message(Model.Message.ROLE_USER, askReq.getQuestion()));
 
         // 创建 HttpHeaders，添加 header
         HttpHeaders headers = new HttpHeaders();
@@ -106,8 +107,8 @@ public class ChatService {
     }
 
     public void chatNoStream(AskReq askReq, SseEmitter sseEmitter) {
-        Model model = new Model(new ArrayList<>());
-        model.getMessages().add(new Model.Message(askReq.getQuestion()));
+        SseEmitterCache.setContent(askReq.getUuid(), Model.Message.ROLE_USER, askReq.getQuestion());
+        Model model = new Model(SseEmitterCache.getContent(askReq.getUuid()));
 
         String result = HttpRequest.post(ChatConstant.CHAT_GPT_URL)
                 .header(Header.AUTHORIZATION.getValue(), "Bearer " + ChatConstant.CHAT_GPT_KEY)
@@ -116,11 +117,15 @@ public class ChatService {
                 .body(JSONUtil.toJsonStr(model))
                 .timeout(100000)
                 .execute().body();
+        log.debug(result);
         try {
             ChatCompletion chatCompletion = JSONUtil.toBean(result, ChatCompletion.class);
-            String content = chatCompletion.getChoices().get(0).getMessage().getContent();
+            ChatCompletion.Message message = chatCompletion.getChoices().get(0).getMessage();
+            SseEmitterCache.setContent(askReq.getUuid(), message.getRole(), message.getContent());
+            String content = message.getContent();
             if (content != null) {
                 log.info(content);
+                content = content.replace("\n", "<br>");
                 sseEmitter.send(SseEmitter.event().data(content));
             }
         } catch (ConvertException e) {

@@ -41,7 +41,7 @@ class ChatGptApplicationTests {
     @Test
     void createChatCompletion() {
         Model model = new Model(new ArrayList<>());
-        model.getMessages().add(new Model.Message("你好"));
+        model.getMessages().add(new Model.Message(Model.Message.ROLE_USER, "你好"));
         String result = HttpRequest.post(ChatConstant.CHAT_GPT_URL)
                 .header(Header.AUTHORIZATION.getValue(), "Bearer " + ChatConstant.CHAT_GPT_KEY)
                 .header(Header.CONTENT_TYPE.getValue(), ContentType.JSON.getValue())
